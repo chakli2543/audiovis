@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_from_directory, url_for
+from flask import Flask, render_template, request, send_from_directory
 import os
 import librosa
 import soundfile as sf
@@ -7,8 +7,12 @@ import scipy.signal
 import matplotlib.pyplot as plt
 
 app = Flask(__name__)
+
 UPLOAD_FOLDER = "static"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# ✅ Create the static folder if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def apply_filter(signal, filter_type, sr):
     nyquist = sr / 2
@@ -33,25 +37,25 @@ def index():
 
     if request.method == "POST":
         selected_filter = request.form.get("filter")
-
         file = request.files.get("audio_file")
+
         if file and file.filename.endswith(".wav"):
             filename = "uploaded.wav"
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             file.save(filepath)
             uploaded_file = file.filename
 
-            # Load and process
+            # Load audio and apply filter
             signal, sr = librosa.load(filepath, sr=16000)
             filtered_audio = apply_filter(signal, selected_filter, sr)
 
-            # Save enhanced audio
+            # Save filtered audio
             output_filename = "enhanced.wav"
             output_path = os.path.join(app.config["UPLOAD_FOLDER"], output_filename)
             sf.write(output_path, filtered_audio, sr)
             audio_file = output_filename
 
-            # Generate and save waveform plot
+            # Save waveform image
             waveform_path = os.path.join(app.config["UPLOAD_FOLDER"], "waveform.png")
             plt.figure(figsize=(10, 4))
             plt.plot(filtered_audio)
@@ -71,6 +75,7 @@ def index():
 def download_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
+# ✅ Production-friendly run
 if __name__ == "__main__":
-    # ✅ Use this version for deployment on Render
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=port)

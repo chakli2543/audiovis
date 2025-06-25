@@ -22,7 +22,8 @@
       width: 100%;
       margin: 0.5rem 0;
       font-weight: 500;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
+      border-radius: 0.5rem;
     }
     .minimal-btn:hover {
       background-color: #a2a091;
@@ -40,7 +41,7 @@
       <p class="text-gray-600 max-w-sm mb-6">Clear your audio with modern filtering. Upload, enhance, and download with ease.</p>
 
       {% if waveform %}
-        <img src="{{ url_for('static', filename=waveform) }}" alt="Waveform Plot" class="rounded-xl shadow-md max-h-[70vh]">
+        <img src="{{ url_for('static', filename=waveform) }}" alt="Waveform Plot" class="rounded-xl shadow-md max-h-[70vh] object-contain">
       {% else %}
         <p class="text-gray-500 italic text-sm">Waveform will appear here after enhancing.</p>
       {% endif %}
@@ -48,35 +49,45 @@
 
     <!-- Right: UI Controls -->
     <div class="bg-[#f4f3eb] p-10 h-full overflow-auto">
-      <form method="POST" enctype="multipart/form-data" class="h-full flex flex-col">
-        <div class="mb-4">
-          <label class="block font-semibold mb-1">Upload WAV File</label>
-          <input type="file" name="audio_file" accept=".wav"
-            class="block w-full border border-gray-400 py-2 px-3 rounded">
-          {% if uploaded_file %}
-            <p class="text-sm text-gray-600 mt-1">Selected: {{ uploaded_file }}</p>
-          {% endif %}
-        </div>
+      <form method="POST" enctype="multipart/form-data" class="h-full flex flex-col justify-between">
 
-        <div class="mb-4">
-          <label class="block font-semibold mb-1">Choose Filter</label>
-          <div>
-            <button type="submit" name="filter" value="low" class="minimal-btn {% if selected_filter == 'low' %}bg-[#a2a091] text-white{% endif %}">Low-pass</button>
-            <button type="submit" name="filter" value="high" class="minimal-btn {% if selected_filter == 'high' %}bg-[#a2a091] text-white{% endif %}">High-pass</button>
-            <button type="submit" name="filter" value="band" class="minimal-btn {% if selected_filter == 'band' %}bg-[#a2a091] text-white{% endif %}">Band-pass</button>
+        <div>
+          <!-- File Upload -->
+          <div class="mb-6">
+            <label class="block font-semibold mb-2">Upload WAV File</label>
+            <input type="file" name="audio_file" accept=".wav"
+              class="block w-full border border-gray-400 py-2 px-3 rounded bg-white">
+            {% if uploaded_file %}
+              <p class="text-sm text-gray-600 mt-1">Selected: {{ uploaded_file }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Filter Buttons -->
+          <div class="mb-6">
+            <label class="block font-semibold mb-2">Choose Filter</label>
+            <div class="grid grid-cols-1 gap-2">
+              <button type="submit" name="filter" value="low"
+                class="minimal-btn {% if selected_filter == 'low' %}bg-[#a2a091] text-white{% endif %}">Low-pass</button>
+              <button type="submit" name="filter" value="high"
+                class="minimal-btn {% if selected_filter == 'high' %}bg-[#a2a091] text-white{% endif %}">High-pass</button>
+              <button type="submit" name="filter" value="band"
+                class="minimal-btn {% if selected_filter == 'band' %}bg-[#a2a091] text-white{% endif %}">Band-pass</button>
+            </div>
           </div>
         </div>
 
         {% if audio_file %}
-          <div class="mb-4">
-            <label class="block font-semibold mb-1">Play Enhanced Audio</label>
-            <audio controls class="w-full">
+          <!-- Audio Player and Download -->
+          <div class="mt-4">
+            <label class="block font-semibold mb-2">Play Enhanced Audio</label>
+            <audio controls class="w-full mb-4">
               <source src="{{ url_for('download_file', filename=audio_file) }}" type="audio/wav">
+              Your browser does not support audio playback.
             </audio>
+            <a href="{{ url_for('download_file', filename=audio_file) }}"
+               class="minimal-btn text-center">💾 Download Enhanced Audio</a>
           </div>
-          <a href="{{ url_for('download_file', filename=audio_file) }}" class="minimal-btn text-center">💾 Download Enhanced Audio</a>
         {% endif %}
-
       </form>
     </div>
 
